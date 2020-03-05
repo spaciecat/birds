@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Bird MIDI</title>
+        <link rel="stylesheet" href="style.scss" />
+    </head>
+    <body>
+        <div id="app">
+            <div id="controls">
+                <h1>Bird MIDI</h1>
+                <p>(This is a work in progress.)</p>
+                <p>Generative music from birds on wires!</p>
+                <p>Upload an image of birds on wires (or any dark objects in lines) and edit "strings" below to generate MIDI data!</p>
+                <p>I wanted to get this tool out into the world as fast as I could, but a real tutorial (including a video) is coming soon I promise!</p>
+                <p>Made by <a href="https://twitter.com/spaciecat">Spacie</a>, 2020.</p>
+                <p><a href="https://github.com/spaciecat/birds">View the source code</a>.</p>
+
+                <div class="box">
+                    
+                    <p> Select a MIDI output. If you don't see any, click the button below to scan for outputs:</p>
+                    <select id="midi-select"> </select>
+                    <div class="button" id="midi-reset">Find MIDI Outs</div>
+
+                    <p>Load an image from your computer (nothing is uploaded):</p>
+                    <div class="button" id="load-image">Load Image</div>
+
+                    <p>Enable UI for fine tuning detection thresholds:</p>
+                    <div class="button" id="toggle-bars">
+                        Toggle detector vision
+                    </div>
+
+                    <p>Create a new string representing a line in your image:</p>
+                    <div class="button" id="make-string">+ New String</div>
+                </div>
+            </div>
+            <div id="canvas-container"></div>
+        </div>
+        <script src="main.ts"></script>
+    </body>
+</html>
