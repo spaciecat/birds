@@ -1,17 +1,35 @@
+import * as Tone from "tone"
+
+document.querySelector("#start-button").addEventListener("click", () => {
+    document.querySelector("#start-button").remove()
+    const main = document.querySelector("#main-controls") as HTMLDivElement
+    main.style.display = "block"
+    Tone.start().then(() => {
+        console.log("Started!")
+    })
+    getMidiOuts()
+})
+
 let midiOut: WebMidi.MIDIOutput = null
 let midiAccess: WebMidi.MIDIAccess = null
 
+let outSynth = null
+
 function getMidiOuts() {
     midiOut = null
+    outSynth = null
 
     navigator.requestMIDIAccess().then(midi => {
         midiAccess = midi
 
         const outs = midi.outputs
 
-        document.querySelector(
-            "#midi-select"
-        ).innerHTML = `<option value=''>--- Select MIDI Output ---</option>`
+        const selector = document.querySelector("#midi-select")
+
+        selector.innerHTML = `
+            <option>--- Select MIDI Output ---</option>
+            <option>Browser synth</option>
+        `
 
         for (const out of Array.from(outs.values())) {
             if (out.name) {
@@ -23,12 +41,17 @@ function getMidiOuts() {
     })
 }
 
-getMidiOuts()
-
-document.querySelector("#midi-reset").addEventListener("click", getMidiOuts)
-
 document.querySelector("#midi-select").addEventListener("input", e => {
+    midiOut = null
+    outSynth = null
+
     if (e.target instanceof HTMLSelectElement) {
+        if (e.target.value == "Browser synth") {
+            outSynth = new Tone.PolySynth({
+                polyphony: 8
+            }).connect(new Tone.Gain(0.5).toMaster())
+        }
+
         if (!midiAccess) return alert(`Could not connect to MIDI!`)
         for (const out of Array.from(midiAccess.outputs.values())) {
             if (out.name == e.target.value) {
@@ -139,7 +162,7 @@ const createSlider = (label: string, onValue = (value: number) => {}) => {
 
 const noteNames = "C C# D D# E F F# G G# A A# B".split(" ")
 
-const createNotePicker = (onMidi = (note: number) => {}) => {
+const createNotePicker = (onMidi = (name: string, num: number) => {}) => {
     const row = document.createElement("div")
     row.className = "note-pick-row"
 
@@ -148,9 +171,9 @@ const createNotePicker = (onMidi = (note: number) => {}) => {
     row.appendChild(labelEle)
 
     const update = () => {
-        const note =
+        const num =
             noteNames.indexOf(noteSel.value) + (parseInt(octSel.value) + 2) * 12
-        onMidi(note)
+        onMidi(`${noteSel.value}${octSel.value}`, num)
     }
 
     const noteSel = document.createElement("select")
@@ -187,7 +210,8 @@ class Line {
     endPos: number = 0.5
 
     // The MIDI note that this line emits when triggered
-    note: number = 0
+    noteName: string = "C-2"
+    noteNum: number = 0
 
     radius = 100
 
@@ -209,7 +233,12 @@ class Line {
 
         this.container.style.setProperty("--color", this.color)
 
-        this.container.appendChild(createNotePicker(note => (this.note = note)))
+        this.container.appendChild(
+            createNotePicker((name, num) => {
+                this.noteName = name
+                this.noteNum = num
+            })
+        )
 
         this.container.appendChild(
             createSlider("Start Pos", x => (this.startPos = x))
@@ -298,10 +327,14 @@ function loop() {
         }
         const onDark = () => {
             if (midiOut) {
-                midiOut.send([0b10010000, string.note, 127])
+                midiOut.send([0b10010000, string.noteNum, 127])
                 setTimeout(() => {
-                    midiOut.send([0b10000000, string.note, 127])
+                    midiOut.send([0b10000000, string.noteNum, 127])
                 }, 250)
+            }
+
+            if (outSynth) {
+                outSynth.triggerAttackRelease(string.noteName, "8n")
             }
         }
 

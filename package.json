@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@types/webmidi": "^2.0.4",
-    "parcel": "^1.12.4"
+    "parcel": "^1.12.4",
+    "tone": "^13.8.25"
   }
 }
