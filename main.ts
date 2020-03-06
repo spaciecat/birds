@@ -8,6 +8,7 @@ document.querySelector("#start-button").addEventListener("click", () => {
         console.log("Started!")
     })
     getMidiOuts()
+    for (const string of strings) string.createUI()
 })
 
 let midiOut: WebMidi.MIDIOutput = null
@@ -78,6 +79,22 @@ document.querySelector("#canvas-container").appendChild(canvas)
 const imageCanvas = document.createElement("canvas")
 const imageCtx = imageCanvas.getContext("2d")
 
+const defaultImage = new Image()
+defaultImage.src = require("./default/bird-img.png")
+setImage(defaultImage)
+
+function setImage(img: HTMLImageElement) {
+    img.onload = () => {
+        canvas.width = img.width
+        canvas.height = img.height
+
+        imageCanvas.width = img.width
+        imageCanvas.height = img.height
+
+        imageCtx.drawImage(img, 0, 0)
+    }
+}
+
 function replaceImage(e) {
     console.log(e)
 
@@ -85,15 +102,7 @@ function replaceImage(e) {
     reader.onload = event => {
         if (typeof event.target.result != "string") return
         var img = new Image()
-        img.onload = function() {
-            canvas.width = img.width
-            canvas.height = img.height
-
-            imageCanvas.width = img.width
-            imageCanvas.height = img.height
-
-            imageCtx.drawImage(img, 0, 0)
-        }
+        setImage(img)
         img.src = event.target.result
     }
     reader.readAsDataURL(e.target.files[0])
@@ -197,23 +206,15 @@ const createNotePicker = (onMidi = (name: string, num: number) => {}) => {
     return row
 }
 
-let strings: Line[] = []
-
 const colors = ["#f35", "#e73", "#ea4", "#3b5", "#64e", "#d3d"]
 
 // Represents a particular line / string in an image
 class Line {
     static nextHue = 0
 
-    // The start and end position of the line along it's axis
-    startPos: number = 0.5
-    endPos: number = 0.5
-
     // The MIDI note that this line emits when triggered
     noteName: string = "C-2"
     noteNum: number = 0
-
-    radius = 100
 
     detector = new LightDetector()
 
@@ -221,7 +222,11 @@ class Line {
 
     color: string = null
 
-    constructor() {
+    constructor(
+        public startPos: number = 0.5,
+        public endPos: number = 0.5,
+        public radius = 100
+    ) {
         this.color = colors[Line.nextHue % colors.length]
         Line.nextHue += 1
     }
@@ -271,6 +276,8 @@ class Line {
         this.container = null
     }
 }
+
+let strings: Line[] = []
 
 document.querySelector("#make-string").addEventListener("click", () => {
     const string = new Line()
@@ -334,7 +341,7 @@ function loop() {
             }
 
             if (outSynth) {
-                outSynth.triggerAttackRelease(string.noteName, "8n")
+                outSynth.triggerAttackRelease(string.noteName, "16n")
             }
         }
 
