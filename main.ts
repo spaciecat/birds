@@ -11,6 +11,12 @@ document.querySelector("#start-button").addEventListener("click", () => {
     for (const string of strings) string.createUI()
 })
 
+let timeInterval = 10000
+document.querySelector("#interval-slider").addEventListener("input", e => {
+    if (e.target instanceof HTMLInputElement)
+        timeInterval = parseInt(e.target.value)
+})
+
 let midiOut: WebMidi.MIDIOutput = null
 let midiAccess: WebMidi.MIDIAccess = null
 
@@ -293,8 +299,7 @@ function loop() {
 
     ctx.drawImage(imageCanvas, 0, 0)
 
-    const interval = 5000
-    const intervalProgress = (Date.now() % interval) / interval
+    const intervalProgress = (Date.now() % timeInterval) / timeInterval
     let currentX = Math.floor(intervalProgress * canvas.width)
 
     let i = 0
