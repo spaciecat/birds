@@ -291,7 +291,22 @@ document.querySelector("#make-string").addEventListener("click", () => {
     strings.push(string)
 })
 
-function loop() {
+let time = 0
+let lastTime = 0
+let running = true
+
+const playPauseButton = document.querySelector("#play-pause")
+playPauseButton.addEventListener("click", () => {
+    running = !running
+    playPauseButton.innerHTML = running ? "Pause" : "Play"
+})
+
+function loop(now: DOMHighResTimeStamp = 0) {
+    const delta = now - lastTime
+    lastTime = now
+
+    if (running) time += delta
+
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
     ctx.fillStyle = "white"
@@ -299,7 +314,7 @@ function loop() {
 
     ctx.drawImage(imageCanvas, 0, 0)
 
-    const intervalProgress = (Date.now() % timeInterval) / timeInterval
+    const intervalProgress = (time % timeInterval) / timeInterval
     let currentX = Math.floor(intervalProgress * canvas.width)
 
     let i = 0
