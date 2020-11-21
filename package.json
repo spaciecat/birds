@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "parcel build -d docs index.html"
+    "build": "parcel build -d docs --public-url ./ index.html"
   },
   "author": "",
   "license": "MIT",
